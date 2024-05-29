@@ -145,6 +145,7 @@ class Chat(Object):
         is_support: bool = None,
         title: str = None,
         username: str = None,
+        usernames: List[str] = None,
         first_name: str = None,
         last_name: str = None,
         photo: "types.ChatPhoto" = None,
@@ -176,6 +177,7 @@ class Chat(Object):
         self.is_support = is_support
         self.title = title
         self.username = username
+        self.usernames = usernames
         self.first_name = first_name
         self.last_name = last_name
         self.photo = photo
@@ -198,6 +200,12 @@ class Chat(Object):
     @staticmethod
     def _parse_user_chat(client, user: raw.types.User) -> "Chat":
         peer_id = user.id
+        user_usernames = []
+        if user.username:
+            user_usernames.append(user.username)
+        elif user.usernames:
+            for username in user.usernames:
+                user_usernames.append(username.username)
 
         return Chat(
             id=peer_id,
@@ -208,6 +216,7 @@ class Chat(Object):
             is_fake=getattr(user, "fake", None),
             is_support=getattr(user, "support", None),
             username=user.username,
+            usernames=user_usernames,
             first_name=user.first_name,
             last_name=user.last_name,
             photo=types.ChatPhoto._parse(client, user.photo, peer_id, user.access_hash),

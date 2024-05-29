@@ -169,6 +169,7 @@ class User(Object, Update):
         last_online_date: datetime = None,
         next_offline_date: datetime = None,
         username: str = None,
+        usernames: List[str] = None,
         language_code: str = None,
         emoji_status: Optional["types.EmojiStatus"] = None,
         dc_id: int = None,
@@ -196,6 +197,7 @@ class User(Object, Update):
         self.last_online_date = last_online_date
         self.next_offline_date = next_offline_date
         self.username = username
+        self.usernames = usernames
         self.language_code = language_code
         self.emoji_status = emoji_status
         self.dc_id = dc_id
@@ -215,7 +217,12 @@ class User(Object, Update):
     def _parse(client, user: "raw.base.User") -> Optional["User"]:
         if user is None or isinstance(user, raw.types.UserEmpty):
             return None
-
+        user_usernames = []
+        if user.username:
+            user_usernames.append(user.username)
+        elif user.usernames:
+            for username in user.usernames:
+                user_usernames.append(username.username)
         return User(
             id=user.id,
             is_self=user.is_self,
@@ -233,6 +240,7 @@ class User(Object, Update):
             last_name=user.last_name,
             **User._parse_status(user.status, user.bot),
             username=user.username,
+            usernames=user_usernames,
             language_code=user.lang_code,
             emoji_status=types.EmojiStatus._parse(client, user.emoji_status),
             dc_id=getattr(user.photo, "dc_id", None),
